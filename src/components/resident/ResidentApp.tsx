@@ -8,6 +8,7 @@ import { ProfileView } from './ProfileView';
 import { SettingsView } from './SettingsView';
 import { OnboardingModal } from './OnboardingModal';
 import { WearableWidget } from './WearableWidget';
+import { ResidentOnboardingFlow } from './ResidentOnboardingFlow';
 import {
   Home,
   ShieldAlert,
@@ -17,10 +18,22 @@ import {
   Settings,
   ChevronLeft,
   Type,
+  UserPlus,
 } from 'lucide-react';
 
 export const ResidentApp: React.FC<{ isEmbedded?: boolean }> = ({ isEmbedded = false }) => {
-  const { language, t, activeSos, notifications, resident, setCurrentView } = useApp();
+  const {
+    language,
+    t,
+    activeSos,
+    notifications,
+    resident,
+    setCurrentView,
+    isOnboardingFlowOpen,
+    setIsOnboardingFlowOpen,
+    onboardingInitialStep,
+    setOnboardingInitialStep,
+  } = useApp();
   const isThai = language === 'th';
 
   const [currentTab, setCurrentTab] = useState<'home' | 'emergency' | 'evacuation' | 'notifications' | 'profile' | 'settings'>('home');
@@ -72,7 +85,24 @@ export const ResidentApp: React.FC<{ isEmbedded?: boolean }> = ({ isEmbedded = f
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5">
+            {/* Sign Up / New Resident Onboarding Button */}
+            <button
+              onClick={() => {
+                setOnboardingInitialStep('signup');
+                setIsOnboardingFlowOpen(!isOnboardingFlowOpen);
+              }}
+              className={`px-2 py-1 rounded-xl text-[10.5px] font-bold border transition flex items-center gap-1 cursor-pointer ${
+                isOnboardingFlowOpen
+                  ? 'bg-teal-700 text-white border-teal-700 shadow-xs'
+                  : 'bg-teal-50 text-teal-800 border-teal-200 hover:bg-teal-100'
+              }`}
+              title="Sign Up / New Resident Registration"
+            >
+              <UserPlus className="w-3.5 h-3.5 text-teal-600" />
+              <span>{isThai ? 'สมัครใหม่' : 'Sign Up'}</span>
+            </button>
+
             {/* Elderly Friendly Large Text Toggle */}
             <button
               onClick={() => setLargeFontMode(!largeFontMode)}
@@ -100,24 +130,38 @@ export const ResidentApp: React.FC<{ isEmbedded?: boolean }> = ({ isEmbedded = f
 
         {/* Scrollable View Content */}
         <div className="flex-1 overflow-y-auto px-5 pt-3 pb-24 space-y-4">
-          {currentTab === 'home' && (
-            <HomeView
-              onNavigate={(tab) => setCurrentTab(tab)}
-              onOpenWearableModal={() => setIsWearableOpen(true)}
+          {isOnboardingFlowOpen ? (
+            <ResidentOnboardingFlow
+              initialStep={onboardingInitialStep}
+              onComplete={() => {
+                setIsOnboardingFlowOpen(false);
+                setCurrentTab('home');
+              }}
+              onCancel={() => setIsOnboardingFlowOpen(false)}
             />
-          )}
-          {currentTab === 'emergency' && <SosView />}
-          {currentTab === 'evacuation' && <EvacuationView />}
-          {currentTab === 'notifications' && <NotificationsView />}
-          {currentTab === 'profile' && <ProfileView />}
-          {currentTab === 'settings' && (
-            <SettingsView onOpenOnboarding={() => setIsOnboardingOpen(true)} />
+          ) : (
+            <>
+              {currentTab === 'home' && (
+                <HomeView
+                  onNavigate={(tab) => setCurrentTab(tab)}
+                  onOpenWearableModal={() => setIsWearableOpen(true)}
+                />
+              )}
+              {currentTab === 'emergency' && <SosView />}
+              {currentTab === 'evacuation' && <EvacuationView />}
+              {currentTab === 'notifications' && <NotificationsView />}
+              {currentTab === 'profile' && <ProfileView />}
+              {currentTab === 'settings' && (
+                <SettingsView onOpenOnboarding={() => setIsOnboardingOpen(true)} />
+              )}
+            </>
           )}
         </div>
 
         {/* Floating Dock Navigation Bar (Clean Pill Dock inspired by Image 1 and Image 2) */}
-        <div className="absolute bottom-4 left-4 right-4 z-30 select-none">
-          <nav className="bg-white/95 backdrop-blur-md rounded-full shadow-xl border border-slate-200/90 px-3 py-2 flex items-center justify-around">
+        {!isOnboardingFlowOpen && (
+          <div className="absolute bottom-4 left-4 right-4 z-30 select-none animate-in fade-in duration-150">
+            <nav className="bg-white/95 backdrop-blur-md rounded-full shadow-xl border border-slate-200/90 px-3 py-2 flex items-center justify-around">
             {/* Home */}
             <button
               onClick={() => setCurrentTab('home')}
@@ -201,6 +245,7 @@ export const ResidentApp: React.FC<{ isEmbedded?: boolean }> = ({ isEmbedded = f
             </button>
           </nav>
         </div>
+        )}
 
         {/* Modals */}
         <OnboardingModal

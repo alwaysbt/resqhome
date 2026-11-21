@@ -33,6 +33,10 @@ interface AppContextType {
   setCurrentView: (view: 'welcome' | 'resident' | 'management' | 'split') => void;
   activeScenario: ScenarioType;
   setActiveScenario: (scenario: ScenarioType) => void;
+  isOnboardingFlowOpen: boolean;
+  setIsOnboardingFlowOpen: (open: boolean) => void;
+  onboardingInitialStep: 'signup' | 'pdpa' | 'profiling';
+  setOnboardingInitialStep: (step: 'signup' | 'pdpa' | 'profiling') => void;
 
   // Data
   resident: Resident;
@@ -96,6 +100,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [currentRole, setCurrentRole] = useState<UserRole>('resident');
   const [currentView, setCurrentView] = useState<'welcome' | 'resident' | 'management' | 'split'>('welcome');
   const [activeScenario, setActiveScenario] = useState<ScenarioType>('normal');
+  const [isOnboardingFlowOpen, setIsOnboardingFlowOpen] = useState(false);
+  const [onboardingInitialStep, setOnboardingInitialStep] = useState<'signup' | 'pdpa' | 'profiling'>('signup');
 
   // Core Data States
   const [resident, setResident] = useState<Resident>(initialResidents[0]);
@@ -838,6 +844,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setCurrentView,
     activeScenario,
     setActiveScenario,
+    isOnboardingFlowOpen,
+    setIsOnboardingFlowOpen,
+    onboardingInitialStep,
+    setOnboardingInitialStep,
     resident,
     updateResident,
     residentsList,

@@ -17,6 +17,7 @@ import {
   ShieldCheck,
   FileText,
   Zap,
+  UserPlus,
 } from 'lucide-react';
 
 interface WelcomePageProps {
@@ -33,6 +34,8 @@ export const WelcomePage: React.FC<WelcomePageProps> = ({ onOpenDemoPanel, onOpe
     triggerFireScenario,
     triggerEarthquakeScenario,
     resetAllToNormal,
+    setIsOnboardingFlowOpen,
+    setOnboardingInitialStep,
   } = useApp();
 
   const isThai = language === 'th';
@@ -96,17 +99,36 @@ export const WelcomePage: React.FC<WelcomePageProps> = ({ onOpenDemoPanel, onOpe
           <div className="pt-6 space-y-2">
             <button
               onClick={() => {
+                setIsOnboardingFlowOpen(false);
                 setCurrentRole('resident');
                 setCurrentView('resident');
               }}
-              className="w-full py-3 px-4 rounded-2xl bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs shadow-md shadow-teal-500/20 transition flex items-center justify-center gap-2 group-hover:gap-3"
+              className="w-full py-3 px-4 rounded-2xl bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs shadow-md shadow-teal-500/20 transition flex items-center justify-center gap-2 group-hover:gap-3 cursor-pointer"
             >
               <span>{t.enterResidentApp}</span>
               <ArrowRight className="w-4 h-4" />
             </button>
+
+            <button
+              onClick={() => {
+                setCurrentRole('resident');
+                setOnboardingInitialStep('signup');
+                setIsOnboardingFlowOpen(true);
+                setCurrentView('resident');
+              }}
+              className="w-full py-2.5 px-3 rounded-2xl bg-teal-50 hover:bg-teal-100 text-teal-800 border border-teal-200 text-xs font-bold transition flex items-center justify-center gap-2 cursor-pointer"
+            >
+              <UserPlus className="w-4 h-4 text-teal-600" />
+              <span>
+                {isThai
+                  ? '✨ สมัครใหม่: Sign Up ➔ PDPA ➔ บันทึกประวัติ'
+                  : '✨ Sign Up & Profiling: Sign Up ➔ PDPA ➔ Profile'}
+              </span>
+            </button>
+
             <button
               onClick={onOpenOnboarding}
-              className="w-full py-2 px-3 text-center text-teal-700 hover:underline text-xs font-semibold"
+              className="w-full py-1.5 px-3 text-center text-teal-700 hover:underline text-xs font-semibold cursor-pointer"
             >
               {isThai ? 'ตรวจสอบนโยบายความเป็นส่วนตัว PDPA' : 'Review Privacy & Technology Terms'}
             </button>

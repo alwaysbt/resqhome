@@ -14,10 +14,19 @@ import {
   Calendar,
   ShieldCheck,
   Camera,
+  UserPlus,
+  Lock,
 } from 'lucide-react';
 
 export const ProfileView: React.FC = () => {
-  const { language, t, resident, updateResident } = useApp();
+  const {
+    language,
+    t,
+    resident,
+    updateResident,
+    setIsOnboardingFlowOpen,
+    setOnboardingInitialStep,
+  } = useApp();
   const isThai = language === 'th';
 
   const [activeTab, setActiveTab] = useState<'personal' | 'medical' | 'contacts'>('personal');
@@ -113,6 +122,25 @@ export const ProfileView: React.FC = () => {
             className="bg-gradient-to-r from-teal-500 to-sky-500 h-2 transition-all duration-500 rounded-full"
             style={{ width: `${completionScore}%` }}
           ></div>
+        </div>
+
+        {/* Quick Actions: Sign Up & PDPA Flow */}
+        <div className="mt-3.5 p-3 rounded-2xl bg-teal-50/70 border border-teal-200 flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <UserPlus className="w-4 h-4 text-teal-700 shrink-0" />
+            <span className="text-[11px] font-bold text-teal-950">
+              {isThai ? 'ต้องการเริ่มขั้นตอนสมัครใหม่?' : 'New Resident Onboarding'}
+            </span>
+          </div>
+          <button
+            onClick={() => {
+              setOnboardingInitialStep('signup');
+              setIsOnboardingFlowOpen(true);
+            }}
+            className="text-[11px] font-bold bg-teal-600 hover:bg-teal-700 text-white px-2.5 py-1 rounded-xl shadow-xs transition cursor-pointer"
+          >
+            {isThai ? 'เริ่ม Sign Up & PDPA' : 'Launch Flow'}
+          </button>
         </div>
 
         {/* Tab Selection */}
