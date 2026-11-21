@@ -1,34 +1,28 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import { OverviewView } from './OverviewView';
-import { IncidentsView } from './IncidentsView';
-import { BuildingMapView } from './BuildingMapView';
-import { ResidentsView } from './ResidentsView';
 import { AssistanceView } from './AssistanceView';
 import { EvacuationMonitoringView } from './EvacuationMonitoringView';
+import { ResidentsView } from './ResidentsView';
 import { StaffView } from './StaffView';
-import { WearablesMonitoringView } from './WearablesMonitoringView';
+import { BuildingMapView } from './BuildingMapView';
 import { HistoryView } from './HistoryView';
 import { ReportsSettingsView } from './ReportsSettingsView';
 import { UserRole } from '../../types';
 import {
   LayoutDashboard,
-  ShieldAlert,
-  Building,
-  Users,
   LifeBuoy,
   Footprints,
+  Users,
   Shield,
-  Watch,
+  Building,
   History,
   FileText,
-  UserCheck,
   Flame,
-  Activity,
-  Sliders,
-  ChevronRight,
   Menu,
   X,
+  ChevronRight,
+  ShieldAlert,
 } from 'lucide-react';
 
 interface ManagementDashboardProps {
@@ -56,17 +50,45 @@ export const ManagementDashboard: React.FC<ManagementDashboardProps> = ({
 
   const activeIncidents = incidents.filter((i) => i.status !== 'resolved');
 
-  const navigationItems = [
-    { key: 'overview', label: t.navOverview, icon: LayoutDashboard },
-    { key: 'incidents', label: t.navIncidents, icon: ShieldAlert, badge: activeIncidents.length },
-    { key: 'map', label: t.navBuildingMap, icon: Building },
-    { key: 'residents', label: t.navResidents, icon: Users },
-    { key: 'assistance', label: t.navAssistance, icon: LifeBuoy },
-    { key: 'evacuation', label: t.navEvacuationMgmt, icon: Footprints },
-    { key: 'staff', label: t.navStaff, icon: Shield },
-    { key: 'wearables', label: t.navWearableMonitor, icon: Watch },
-    { key: 'history', label: t.navHistory, icon: History },
-    { key: 'reports', label: t.navReports, icon: FileText },
+  // Streamlined 6 core menu items requested by user
+  const primaryNavigationItems = [
+    {
+      key: 'overview',
+      labelEn: 'Dashboard',
+      labelTh: 'แดชบอร์ดภาพรวม',
+      icon: LayoutDashboard,
+    },
+    {
+      key: 'assistance',
+      labelEn: 'Assistance Requests',
+      labelTh: 'คำขอความช่วยเหลือ & เหตุฉุกเฉิน',
+      icon: LifeBuoy,
+      badge: activeIncidents.length,
+    },
+    {
+      key: 'evacuation',
+      labelEn: 'Evacuation Monitoring',
+      labelTh: 'ติดตามการอพยพ',
+      icon: Footprints,
+    },
+    {
+      key: 'residents',
+      labelEn: 'Residential',
+      labelTh: 'ทะเบียนลูกบ้าน & อุปกรณ์',
+      icon: Users,
+    },
+    {
+      key: 'staff',
+      labelEn: 'Staff Management',
+      labelTh: 'จัดการเจ้าหน้าที่',
+      icon: Shield,
+    },
+    {
+      key: 'map',
+      labelEn: 'Building Map',
+      labelTh: 'ผังอาคาร & เซนเซอร์',
+      icon: Building,
+    },
   ];
 
   const handleSelectFloorFromOverview = (floorNum: number) => {
@@ -87,10 +109,10 @@ export const ManagementDashboard: React.FC<ManagementDashboardProps> = ({
             </span>
           </div>
           <button
-            onClick={() => setActiveTab('incidents')}
+            onClick={() => setActiveTab('assistance')}
             className="px-2.5 py-0.5 rounded-full bg-white/20 hover:bg-white/30 text-white text-[11px] font-semibold transition"
           >
-            {isThai ? 'เปิดดูรายการเหตุ' : 'View Incident Triage ➔'}
+            {isThai ? 'เปิดดูคำขอความช่วยเหลือ' : 'View Assistance Queue ➔'}
           </button>
         </div>
       )}
@@ -155,7 +177,7 @@ export const ManagementDashboard: React.FC<ManagementDashboardProps> = ({
         </div>
       </div>
 
-      {/* Main Layout: Sidebar Navigation + Main Workspace */}
+      {/* Main Layout: Minimized 6-Item Sidebar + Workspace */}
       <div className="flex-1 flex overflow-hidden">
         {/* Left Navigation Sidebar */}
         <aside
@@ -164,13 +186,18 @@ export const ManagementDashboard: React.FC<ManagementDashboardProps> = ({
           }`}
         >
           <div className="space-y-1">
-            <div className="text-[10px] font-mono uppercase tracking-wider text-slate-400 px-3 py-2 font-bold">
-              Operations Center
+            <div className="text-[10px] font-mono uppercase tracking-wider text-slate-400 px-3 py-2 font-bold flex items-center justify-between">
+              <span>Control Navigation</span>
+              <span className="text-[9px] bg-slate-800 text-teal-400 px-1.5 py-0.5 rounded font-mono">
+                6 TABS
+              </span>
             </div>
 
-            {navigationItems.map((item) => {
+            {/* Streamlined Primary 6 Navigation Items */}
+            {primaryNavigationItems.map((item) => {
               const Icon = item.icon;
               const isActive = activeTab === item.key;
+              const label = isThai ? item.labelTh : item.labelEn;
 
               return (
                 <button
@@ -179,15 +206,15 @@ export const ManagementDashboard: React.FC<ManagementDashboardProps> = ({
                     setActiveTab(item.key);
                     setIsSidebarOpenMobile(false);
                   }}
-                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-2xl text-xs font-semibold transition ${
+                  className={`w-full flex items-center justify-between px-3 py-3 rounded-2xl text-xs font-semibold transition ${
                     isActive
                       ? 'bg-teal-600 text-white shadow-md shadow-teal-600/20'
                       : 'hover:bg-slate-800 text-slate-300 hover:text-white'
                   }`}
                 >
-                  <div className="flex items-center gap-2.5">
+                  <div className="flex items-center gap-3">
                     <Icon className="w-4 h-4 shrink-0" />
-                    <span>{item.label}</span>
+                    <span>{label}</span>
                   </div>
                   {item.badge !== undefined && item.badge > 0 && (
                     <span className="w-5 h-5 rounded-full bg-rose-500 text-white text-[10px] font-mono font-bold flex items-center justify-center">
@@ -197,6 +224,41 @@ export const ManagementDashboard: React.FC<ManagementDashboardProps> = ({
                 </button>
               );
             })}
+
+            {/* Subtle Divider for System Logs */}
+            <div className="pt-4 border-t border-slate-800/80 mt-3">
+              <div className="text-[10px] font-mono uppercase tracking-wider text-slate-500 px-3 pb-1 font-semibold">
+                Compliance & Logs
+              </div>
+              <button
+                onClick={() => {
+                  setActiveTab('history');
+                  setIsSidebarOpenMobile(false);
+                }}
+                className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs transition ${
+                  activeTab === 'history'
+                    ? 'bg-slate-800 text-teal-300 font-bold'
+                    : 'text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                <History className="w-3.5 h-3.5" />
+                <span>{isThai ? 'ประวัติ & Audit Trail' : 'History & Audit Logs'}</span>
+              </button>
+              <button
+                onClick={() => {
+                  setActiveTab('reports');
+                  setIsSidebarOpenMobile(false);
+                }}
+                className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs transition ${
+                  activeTab === 'reports'
+                    ? 'bg-slate-800 text-teal-300 font-bold'
+                    : 'text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                <FileText className="w-3.5 h-3.5" />
+                <span>{isThai ? 'รายงานความปลอดภัย' : 'Safety Plan & Export'}</span>
+              </button>
+            </div>
           </div>
 
           {/* Role Info Footer */}
@@ -213,20 +275,18 @@ export const ManagementDashboard: React.FC<ManagementDashboardProps> = ({
           </div>
         </aside>
 
-        {/* Main Content Area */}
+        {/* Main Workspace Area */}
         <main className="flex-1 overflow-y-auto p-4 sm:p-6">
           {activeTab === 'overview' && (
             <OverviewView onSelectFloor={handleSelectFloorFromOverview} />
           )}
-          {activeTab === 'incidents' && <IncidentsView />}
+          {activeTab === 'assistance' && <AssistanceView />}
+          {activeTab === 'evacuation' && <EvacuationMonitoringView />}
+          {activeTab === 'residents' && <ResidentsView />}
+          {activeTab === 'staff' && <StaffView />}
           {activeTab === 'map' && (
             <BuildingMapView initialFloor={selectedFloorForMap} />
           )}
-          {activeTab === 'residents' && <ResidentsView />}
-          {activeTab === 'assistance' && <AssistanceView />}
-          {activeTab === 'evacuation' && <EvacuationMonitoringView />}
-          {activeTab === 'staff' && <StaffView />}
-          {activeTab === 'wearables' && <WearablesMonitoringView />}
           {activeTab === 'history' && <HistoryView />}
           {activeTab === 'reports' && <ReportsSettingsView />}
         </main>

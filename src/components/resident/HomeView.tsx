@@ -184,9 +184,6 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigate, onOpenWearableMo
 
         <button
           onClick={() => {
-            if (!activeSos) {
-              triggerResidentSos('medical');
-            }
             onNavigate('emergency');
           }}
           className={`w-full py-5 rounded-2xl font-black text-white text-lg tracking-wider shadow-lg transition-all duration-300 flex flex-col items-center justify-center gap-1 active:scale-95 ${
@@ -202,7 +199,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigate, onOpenWearableMo
           <span className="text-[11px] font-normal text-rose-100 tracking-normal">
             {activeSos
               ? isThai ? 'กำลังดำเนินการช่วยเหลือ — แตะดูสถานะ' : 'Assistance in Progress — Tap to view'
-              : isThai ? 'แตะ 1 ครั้งเพื่อแจ้งเจ้าหน้าที่กู้ภัย' : 'Tap for instant response team dispatch'}
+              : isThai ? 'แตะเพื่อเลือกประเภทเหตุและยืนยันขอความช่วยเหลือ' : 'Tap to select reason and confirm emergency call'}
           </span>
         </button>
       </div>

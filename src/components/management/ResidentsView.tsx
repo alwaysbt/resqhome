@@ -15,6 +15,9 @@ import {
   XCircle,
   Eye,
   Activity,
+  Battery,
+  Smartphone,
+  CheckCircle2,
 } from 'lucide-react';
 
 export const ResidentsView: React.FC = () => {
@@ -23,9 +26,10 @@ export const ResidentsView: React.FC = () => {
 
   const [searchTerm, setSearchTerm] = useState('');
   const [filterCategory, setFilterCategory] = useState<string>('all');
+  const [wearableFilter, setWearableFilter] = useState<'all' | 'with_wearable' | 'no_wearable'>('all');
   const [viewingMedicalResident, setViewingMedicalResident] = useState<Resident | null>(null);
 
-  // RBAC check: Only responders, security, and admin can view confidential medical dossiers
+  // RBAC check
   const canAccessMedical = currentRole === 'admin' || currentRole === 'security' || currentRole === 'responder';
 
   const handleOpenMedicalDossier = (res: Resident) => {
@@ -49,23 +53,37 @@ export const ResidentsView: React.FC = () => {
     const matchesCategory =
       filterCategory === 'all' || r.assistanceCategory === filterCategory;
 
-    return matchesSearch && matchesCategory;
+    const matchesWearable =
+      wearableFilter === 'all' ||
+      (wearableFilter === 'with_wearable' && r.wearable.connected) ||
+      (wearableFilter === 'no_wearable' && !r.wearable.connected);
+
+    return matchesSearch && matchesCategory && matchesWearable;
   });
+
+  const totalWithWearables = residentsList.filter((r) => r.wearable.connected).length;
+  const totalWithoutWearables = residentsList.length - totalWithWearables;
 
   return (
     <div className="space-y-4 animate-in fade-in duration-200">
-      {/* Header & Search */}
+      {/* Header */}
       <div className="bg-white rounded-3xl p-5 shadow-sm border border-slate-200/80 flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
-            <Users className="w-5 h-5 text-teal-600" />
-            <span>{t.navResidents}</span>
-          </h2>
-          <p className="text-xs text-slate-500">
-            {isThai
-              ? 'ทะเบียนผู้อยู่อาศัย ความต้องการพิเศษ และสถานะการเช็คอินความปลอดภัย'
-              : 'Resident directory, declared assistance preferences, and life-safety profiles'}
-          </p>
+          <div className="flex items-center gap-2">
+            <div className="w-9 h-9 rounded-2xl bg-teal-50 border border-teal-200 flex items-center justify-center text-teal-600">
+              <Users className="w-5 h-5" />
+            </div>
+            <div>
+              <h2 className="text-base font-bold text-slate-900">
+                {isThai ? 'ทะเบียนผู้อยู่อาศัยและอุปกรณ์สวมใส่' : 'Residential Directory & Wearable Telemetry'}
+              </h2>
+              <p className="text-xs text-slate-500">
+                {isThai
+                  ? 'ข้อมูลผู้พักอาศัย ความต้องการพิเศษ สัญญาณชีพจากนาฬิกา และการเช็คอินความปลอดภัย'
+                  : 'Comprehensive resident directory, declared assistance needs, wearable vitals, and check-in state'}
+              </p>
+            </div>
+          </div>
         </div>
 
         {/* Search & Category Filter */}
@@ -77,7 +95,7 @@ export const ResidentsView: React.FC = () => {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder={isThai ? 'ค้นหาชื่อ หรือห้องชุด...' : 'Search name or unit...'}
-              className="bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-3 py-1.5 text-xs text-slate-800 focus:bg-white focus:ring-2 focus:ring-teal-500 w-44 sm:w-56"
+              className="bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-3 py-1.5 text-xs text-slate-800 focus:bg-white focus:ring-2 focus:ring-teal-500 w-44 sm:w-52 font-medium"
             />
           </div>
 
@@ -87,7 +105,7 @@ export const ResidentsView: React.FC = () => {
             className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 text-xs font-semibold text-slate-700 focus:bg-white focus:ring-2 focus:ring-teal-500"
           >
             <option value="all">{t.all} ({residentsList.length})</option>
-            <option value="wheelchair">Wheelchair Users</option>
+            <option value="wheelchair">♿ Wheelchair Users</option>
             <option value="elderly">Elderly / Physical Support</option>
             <option value="hearing">Hearing Impairment</option>
             <option value="visual">Visual Impairment</option>
@@ -96,18 +114,55 @@ export const ResidentsView: React.FC = () => {
         </div>
       </div>
 
-      {/* PDPA Confidentiality Notice Banner */}
-      <div className="p-3.5 rounded-2xl bg-teal-50 border border-teal-200 text-xs text-teal-950 flex items-center justify-between">
+      {/* Filter by Wearable Connection Status */}
+      <div className="flex flex-wrap items-center justify-between gap-3 bg-white p-3.5 rounded-2xl border border-slate-200/80 text-xs">
         <div className="flex items-center gap-2">
-          <Lock className="w-4 h-4 text-teal-700" />
-          <span>{t.medicalRestrictedNotice}</span>
+          <span className="font-semibold text-slate-600">
+            {isThai ? 'อุปกรณ์สวมใส่ (Wearable Status):' : 'Device Connectivity:'}
+          </span>
+          <div className="flex items-center gap-1.5 font-bold">
+            <button
+              onClick={() => setWearableFilter('all')}
+              className={`px-2.5 py-1 rounded-lg transition ${
+                wearableFilter === 'all'
+                  ? 'bg-slate-900 text-white'
+                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+              }`}
+            >
+              All ({residentsList.length})
+            </button>
+            <button
+              onClick={() => setWearableFilter('with_wearable')}
+              className={`px-2.5 py-1 rounded-lg transition flex items-center gap-1 ${
+                wearableFilter === 'with_wearable'
+                  ? 'bg-sky-600 text-white'
+                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+              }`}
+            >
+              <Watch className="w-3 h-3" />
+              <span>With Watch ({totalWithWearables})</span>
+            </button>
+            <button
+              onClick={() => setWearableFilter('no_wearable')}
+              className={`px-2.5 py-1 rounded-lg transition flex items-center gap-1 ${
+                wearableFilter === 'no_wearable'
+                  ? 'bg-slate-700 text-white'
+                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+              }`}
+            >
+              <Smartphone className="w-3 h-3" />
+              <span>Mobile Only ({totalWithoutWearables})</span>
+            </button>
+          </div>
         </div>
-        <span className="text-[11px] font-mono text-teal-700 font-semibold">
-          RBAC: {currentRole.toUpperCase()}
-        </span>
+
+        <div className="text-[11px] font-mono text-teal-800 bg-teal-50 px-2.5 py-1 rounded-lg border border-teal-200 font-semibold flex items-center gap-1.5">
+          <Lock className="w-3 h-3 text-teal-700" />
+          <span>PDPA Access Logging Active</span>
+        </div>
       </div>
 
-      {/* Residents Table */}
+      {/* Residents & Wearable Data Table */}
       <div className="bg-white rounded-3xl shadow-sm border border-slate-200/80 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs border-collapse">
@@ -116,30 +171,34 @@ export const ResidentsView: React.FC = () => {
                 <th className="py-3.5 px-4">{t.residentName}</th>
                 <th className="py-3.5 px-4">{t.residentApt}</th>
                 <th className="py-3.5 px-4">{t.declaredNeeds}</th>
+                <th className="py-3.5 px-4">Wearable Device & Telemetry</th>
                 <th className="py-3.5 px-4">{t.checkInState}</th>
-                <th className="py-3.5 px-4">Wearable Telemetry</th>
                 <th className="py-3.5 px-4 text-right">{t.actions}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
               {filteredResidents.map((r) => (
                 <tr key={r.id} className="hover:bg-slate-50/80 transition">
-                  {/* Name */}
+                  {/* Name & Contact */}
                   <td className="py-4 px-4">
-                    <div className="font-bold text-slate-900">{isThai ? r.nameTh : r.name}</div>
-                    <div className="text-[11px] text-slate-500 font-mono">{r.phone}</div>
+                    <div className="font-bold text-slate-900 text-sm">
+                      {isThai ? r.nameTh : r.name}
+                    </div>
+                    <div className="text-[11px] text-slate-500 font-mono mt-0.5">
+                      Tel: {r.phone}
+                    </div>
                   </td>
 
                   {/* Unit & Floor */}
                   <td className="py-4 px-4 font-mono">
-                    <span className="font-bold text-slate-900">Unit {r.unit}</span>
-                    <span className="text-[11px] text-slate-500 block">Floor {r.floor}</span>
+                    <span className="font-bold text-slate-900 text-sm">Unit {r.unit}</span>
+                    <span className="text-[11px] text-slate-500 block">Floor {r.floor} • {r.tower}</span>
                   </td>
 
                   {/* Declared Needs */}
                   <td className="py-4 px-4">
                     <span
-                      className={`px-2.5 py-1 rounded-full text-[11px] font-bold ${
+                      className={`inline-block px-2.5 py-1 rounded-full text-[11px] font-bold ${
                         r.assistanceCategory === 'wheelchair'
                           ? 'bg-amber-100 text-amber-900 border border-amber-300'
                           : r.assistanceCategory === 'elderly'
@@ -161,10 +220,48 @@ export const ResidentsView: React.FC = () => {
                     </span>
                   </td>
 
+                  {/* Wearable Device Telemetry (Handling connected vs without wearable!) */}
+                  <td className="py-4 px-4">
+                    {r.wearable.connected ? (
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2">
+                          <span className="px-2 py-0.5 rounded-md bg-sky-50 text-sky-800 border border-sky-200 text-[10px] font-mono font-bold flex items-center gap-1">
+                            <Watch className="w-3 h-3 text-sky-600" />
+                            <span>{r.wearable.model}</span>
+                          </span>
+                          {r.wearable.fallDetected && (
+                            <span className="px-1.5 py-0.5 rounded-md bg-rose-600 text-white text-[9.5px] font-black animate-pulse">
+                              FALL ALERT
+                            </span>
+                          )}
+                        </div>
+
+                        <div className="flex items-center gap-3 text-[11px] text-slate-700 font-mono">
+                          <span className="flex items-center gap-1">
+                            <Heart className="w-3.5 h-3.5 text-rose-500 fill-current animate-pulse" />
+                            <strong className="text-slate-900">{r.wearable.heartRate}</strong> BPM
+                          </span>
+                          <span>•</span>
+                          <span className="flex items-center gap-1">
+                            <Battery className={`w-3.5 h-3.5 ${r.wearable.batteryLevel < 20 ? 'text-rose-500 font-bold' : 'text-emerald-500'}`} />
+                            <strong className={r.wearable.batteryLevel < 20 ? 'text-rose-600' : 'text-slate-900'}>
+                              {r.wearable.batteryLevel}%
+                            </strong>
+                          </span>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-1.5 text-slate-500 bg-slate-100 px-2.5 py-1 rounded-xl text-[11px] w-fit">
+                        <Smartphone className="w-3.5 h-3.5 text-slate-400" />
+                        <span>{isThai ? 'ไม่มีอุปกรณ์ (ใช้แอปมือถือ)' : 'No Wearable Linked (Mobile Only)'}</span>
+                      </div>
+                    )}
+                  </td>
+
                   {/* Check-In State */}
                   <td className="py-4 px-4">
                     <span
-                      className={`px-2 py-0.5 rounded-md text-[10px] font-bold ${
+                      className={`px-2.5 py-1 rounded-md text-[10.5px] font-bold ${
                         r.checkInStatus === 'safe'
                           ? 'bg-emerald-100 text-emerald-800'
                           : r.checkInStatus === 'needs_help'
@@ -178,27 +275,11 @@ export const ResidentsView: React.FC = () => {
                     </span>
                   </td>
 
-                  {/* Wearable Status */}
-                  <td className="py-4 px-4">
-                    {r.wearable.connected ? (
-                      <div className="flex items-center gap-2 text-[11px] text-slate-700 font-mono">
-                        <Watch className="w-3.5 h-3.5 text-sky-600" />
-                        <span>{r.wearable.heartRate} BPM</span>
-                        <span>•</span>
-                        <span className={r.wearable.batteryLevel < 20 ? 'text-rose-600 font-bold' : ''}>
-                          {r.wearable.batteryLevel}%
-                        </span>
-                      </div>
-                    ) : (
-                      <span className="text-[11px] text-slate-400 italic">No device</span>
-                    )}
-                  </td>
-
                   {/* Actions (View Medical Dossier) */}
                   <td className="py-4 px-4 text-right">
                     <button
                       onClick={() => handleOpenMedicalDossier(r)}
-                      className="px-3 py-1.5 rounded-xl bg-teal-50 hover:bg-teal-100 text-teal-800 border border-teal-200 text-xs font-bold transition flex items-center gap-1.5 ml-auto"
+                      className="px-3 py-1.5 rounded-xl bg-teal-50 hover:bg-teal-100 text-teal-800 border border-teal-200 text-xs font-bold transition flex items-center gap-1.5 ml-auto shadow-2xs"
                     >
                       <Eye className="w-3.5 h-3.5" />
                       <span>{isThai ? 'เวชระเบียน' : 'Dossier'}</span>
@@ -217,8 +298,8 @@ export const ResidentsView: React.FC = () => {
           <div className="bg-white rounded-3xl shadow-2xl border border-slate-200 w-full max-w-lg overflow-hidden animate-in fade-in zoom-in-95 duration-150">
             <div className="p-5 bg-gradient-to-r from-teal-800 via-sky-800 to-slate-900 text-white flex items-center justify-between">
               <div>
-                <span className="text-[10px] font-mono uppercase tracking-wider text-teal-300">
-                  PDPA Section 26 — Emergency Medical Record
+                <span className="text-[10px] font-mono uppercase tracking-wider text-teal-300 font-bold">
+                  PDPA Section 26 — Emergency Medical Dossier
                 </span>
                 <h3 className="text-base font-bold">
                   {isThai ? viewingMedicalResident.nameTh : viewingMedicalResident.name}

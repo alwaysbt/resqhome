@@ -7,33 +7,23 @@
 
 ---
 
-## 1. Project Overview & Concept
+## 1. Project Overview & Architectural Improvements
 
-**ResQHome** is a bilingual (Thai / English), fully interactive life-safety and emergency response platform designed for high-rise residential condominiums. In emergencies such as high-rise fires or earthquakes, traditional alarms treat all occupants identically and lack real-time coordination. ResQHome connects **residents**, **building management**, **security control rooms**, and **emergency response personnel** into an integrated, life-critical network.
+**ResQHome** is a bilingual (Thai / English), fully interactive life-safety and emergency response platform designed for high-rise residential condominiums. 
 
-### Two Connected Interfaces:
-1. **Resident Mobile Application (`ResidentApp`)**:
-   - Mobile-first interface for residents.
-   - 1-Tap Emergency SOS with immediate triage & tracking.
-   - Comprehensive Personal Emergency Profile with automatic age calculation from DOB.
-   - Personalized assistance settings (Wheelchair, Elderly, Hearing Impairment, Visual Impairment).
-   - Dynamic 2D architectural evacuation floor plan with real-time hazard rerouting.
-   - Emergency notification center & life-safety wearable simulation.
-   - Granular PDPA privacy consent controls and technology usage disclosures.
-
-2. **Building Management Dashboard (`ManagementDashboard`)**:
-   - Desktop-first operations hub for building staff.
-   - 20-Floor visual status matrix and floor-by-floor inspector.
-   - Live Incident Triage with multi-staff responder assignment.
-   - Dynamic graph-based evacuation path verification.
-   - Role-Based Access Control (RBAC) protecting confidential medical dossiers.
-   - Assistance request dispatch queue.
-   - Wearable telemetry stream (accelerometer fall detection & vitals).
-   - Immutable audit trail logging all actions and PDPA data access.
-
-3. **Interactive Split-View Mode (`SplitView`)**:
-   - Displays both Resident App (left) and Management Dashboard (right) side-by-side.
-   - Powered by `BroadcastChannel` and `localStorage` for zero-latency, cross-tab, cross-interface real-time synchronization.
+### Recent UX & Senior Accessibility Updates:
+1. **Senior-Centric UI/UX**: Soft pastel color palette (calm mint `#eaf8ee`, diagnostics blue `#eaf4fc`, warm yellow `#fefce8`), large legible typography, high contrast, and an optional **Senior Font Size Switcher** (`Text: M` / `Text: L`).
+2. **2-Step Accidental-Proof SOS Workflow**:
+   - Tapping the Emergency button on Home or the bottom dock redirects to the SOS menu without triggering an immediate alarm.
+   - **Step 1**: The resident chooses an emergency reason (*Medical Emergency, Fall / Injury, Accident in Unit, Evacuation Help, Other Urgent Distress*).
+   - **Step 2**: The resident slides the tactile **"Slide to Confirm Emergency SOS"** track (*similar to sliding to pick up an incoming phone call*) to dispatch the distress call.
+3. **Streamlined 6-Tab Management Dashboard**:
+   - **1. Dashboard**: High-level overview, top metrics, and 20-floor skyscraper status matrix.
+   - **2. Assistance Requests**: **Merged with Live Incidents** into a unified command triage center with multi-staff responder assignment and live tracking.
+   - **3. Evacuation Monitoring**: Floor-by-floor evacuation progress, assembly point head count, and official building evacuation broadcast orders.
+   - **4. Residential**: Resident directory showing declared assistance requirements, check-in status, and **integrated wearable user data** (*handling both residents with smartwatches and residents with mobile-only access*).
+   - **5. Staff Management**: On-duty roster for Administrator, Security, and Emergency Responders.
+   - **6. Building Map**: 2D architectural CAD floor plan inspector for all 20 floors with environmental telemetry and corridor blockage overrides.
 
 ---
 
@@ -41,9 +31,9 @@
 
 | Role | Name & Title | Demo Access Path | Key Permissions |
 |---|---|---|---|
-| **Resident** | **Somchai Prasert**<br>*(สมชาย ประเสริฐสุข)*<br>Unit 1204, Floor 12 | Select **Resident App** from Portal | 1-Tap SOS, edit profile, automatic age calculation, view evacuation route to Refuge 12-R, Safety Check-in, PDPA controls |
+| **Resident** | **Somchai Prasert**<br>*(สมชาย ประเสริฐสุข)*<br>Unit 1204, Floor 12 | Select **Resident App** from Portal | Select emergency reason, slide to confirm SOS, edit profile, automatic age calculation, view evacuation route to Refuge 12-R, Safety Check-in, PDPA controls |
 | **Building Administrator** | **Preecha Suksabai**<br>*(ผู้จัดการนิติบุคคลอาคารชุด)* | Select **Administrator** in Dashboard | Full administrative access, building sensor configuration, resident directory, incident logs, system reset |
-| **Security / Control Room** | **Somkid Jaidee**<br>*(หัวหน้าฝ่ายความปลอดภัย / คอนโทรลรูม)* | Select **Security Lead** in Dashboard | Real-time incident triage, route verification, corridor blockage controls, building-wide evacuation broadcast |
+| **Security / Control Room** | **Somkid Jaidee**<br>*(หัวหน้าฝ่ายความปลอดภัย / คอนโทรลรูม)* | Select **Security Lead** in Dashboard | Live incident triage, dispatch coordination, corridor blockage controls, route verification, evacuation orders |
 | **Emergency Response Staff** | **Wichai Thongdee**<br>*(เจ้าหน้าที่กู้ภัยและเก้าอี้อพยพ)* | Select **Responder** in Dashboard | Assigned distress calls, confidential medical summaries, on-scene status updates, assistance completion confirmation |
 
 ---
@@ -52,13 +42,15 @@
 
 Launch any demonstration in 1-click using the floating **Demo Control Panel** (or test them manually):
 
-### Demo 1: Normal Resident Experience
+### Demo 1: Normal Resident Experience & 2-Step SOS Flow
 1. Open **Resident Mobile App**.
 2. Review the **Privacy & Technology Onboarding Modal** (covers PDPA, IP terms, sensor usage, and granular consent checkboxes).
-3. Tap **My Profile** > **Personal Info**:
+3. On Home, tap the large red **Emergency SOS** card:
+   - Notice it safely navigates to the SOS screen **without** triggering false alarms.
+   - **Select Reason**: Tap **"Fall / Injury"** or **"Medical Emergency"**.
+   - **Slide to Confirm**: Drag the phone knob to the right on the **"Slide to Confirm Emergency SOS"** track to dispatch the call!
+4. Tap **My Profile** > **Personal Info**:
    - Change the Date of Birth (DOB) and observe the **Calculated Age** updating automatically.
-4. Tap **Medical & Life-Safety**:
-   - Review wheelchair usage, hypertension, and penicillin allergy badges.
 5. Tap **Life-Safety Watch** widget on Home:
    - Inspect connected battery (84%), pulse telemetry (74 BPM), and simulated Bluetooth Low Energy (BLE) link.
 
@@ -92,56 +84,32 @@ Launch any demonstration in 1-click using the floating **Demo Control Panel** (o
 
 ### Demo 5: Staff Coordination & Role-Based Access Control (RBAC)
 1. In the **Building Management Dashboard**, switch roles between **Administrator**, **Security Lead**, and **Responder**:
-   - **Security Lead** triages incoming SOS calls and verifies routes.
-   - **Responder** sees assigned cases and opens the **Confidential Medical Dossier** (displays drug allergies and critical history under statutory operational necessity).
+   - Open **Assistance Requests** to triage incoming calls and verify routes.
+   - Open **Residential** to view resident profiles and wearable vitals.
+   - Click **Dossier** to open the resident's **Confidential Medical Dossier** (displays drug allergies and clinical instructions).
    - Every medical file inspection generates an immutable entry in the **History & PDPA Audit Trail**.
 
 ### Demo 6: Cross-Interface Real-Time Synchronization (Split View)
 1. Open **Split View (Resident + Dashboard)**.
-2. In the mobile window on the left, press the large red **Emergency SOS** button.
-3. Observe with **zero manual refresh**:
-   - The distress call appears immediately in the Management Dashboard triage queue on the right.
+2. In the mobile window on the left, tap the emergency button, select **"Medical Emergency"**, and slide the track to confirm.
+3. Observe on the right dashboard screen with **zero manual refresh**:
+   - The distress call appears immediately in the **Assistance Requests** triage queue.
    - Staff clicks **Acknowledge** and assigns responder **Wichai Thongdee**.
    - The resident mobile app instantly updates from *"Reported"* to *"Acknowledged"* to *"Responders En Route"* with the assigned officer's name and contact!
 
 ---
 
-## 4. Simulated Features vs. Actual Integrations
-
-To ensure transparency, the prototype distinguishes simulated sensor hardware from operational software:
-
-| Capability | Implementation in Prototype | Real-World Hardware Integration |
-|---|---|---|
-| **Cross-Interface Synchronization** | **Actual Live Implementation** (BroadcastChannel + LocalStorage) | WebSockets / MQTT / Cloud PubSub Broker |
-| **Dynamic Routing Algorithm** | **Actual Graph Calculation** (Dijkstra/A* variant evaluating safety & accessibility) | Building BIM model / IoT occupancy sensors |
-| **Age Auto-Calculation** | **Actual Real-Time JS Math** from ISO-8601 Date of Birth | User Profile Database |
-| **Audio Siren Chime** | **Actual Web Audio API Synthesis** | In-app push sirens & corridor sounders |
-| **Indoor Positioning (BLE / Wi-Fi)** | **Simulated** via floor and unit beacon anchors | Physical BLE iBeacon anchors & Wi-Fi RTT routers |
-| **Smoke & Heat Sensors** | **Simulated** via granular control sliders (0–600 PPM, 20–90°C) | Building Fire Alarm Control Panel (FACP / BACnet / Modbus) |
-| **Smartwatch Accelerometer** | **Simulated** via virtual wearable widget & 15-second fall countdown | Apple Watch / Wear OS CoreMotion & HealthKit API |
-| **Passenger Elevator Lockout** | **Simulated** state transition to fire recall mode | Elevator Controller Relay (Dry contact / CAN bus) |
-
----
-
-## 5. Technology Stack & Architecture
+## 4. Technology Stack & Architecture
 
 - **Framework**: React 19 + TypeScript
 - **Bundler & Tooling**: Vite 8 + `@tailwindcss/vite`
 - **Styling**: Tailwind CSS 4 with custom keyframe animations (`animate-emergency-pulse`, `animate-earthquake`)
 - **Icons**: Lucide React
-- **Architecture**:
-  - `src/types/index.ts`: Type definitions for Residents, Floors, Hazards, Incidents, Staff, PDPA Consents.
-  - `src/locales/translations.ts`: Complete bilingual dictionary (Thai & English).
-  - `src/context/AppContext.tsx`: Central state management, LocalStorage persistence, BroadcastChannel synchronization.
-  - `src/utils/evacuationRouter.ts`: Graph-based dynamic routing engine considering hazards & accessibility.
-  - `src/components/floorplan/FloorPlanSvg.tsx`: 2D Architectural CAD SVG diagram with animated route paths.
-  - `src/components/resident/`: Mobile Resident App views.
-  - `src/components/management/`: Desktop Command & Control views.
-  - `src/components/split/`: Dual-screen synchronized testing view.
+- **Synchronization**: `BroadcastChannel` + `localStorage` for cross-tab real-time reactivity
 
 ---
 
-## 6. How to Run Locally
+## 5. How to Run Locally
 
 ```bash
 # Clone repository
