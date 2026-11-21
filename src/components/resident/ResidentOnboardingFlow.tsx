@@ -36,15 +36,15 @@ export const ResidentOnboardingFlow: React.FC<ResidentOnboardingFlowProps> = ({
 
   const [step, setStep] = useState<'signup' | 'pdpa' | 'profiling'>(initialStep);
 
-  // Form State: Sign Up
+  // Form State: Sign Up (Starts blank so user fills in by themselves)
   const [signupData, setSignupData] = useState({
-    nameTh: resident.nameTh || 'สมชาย ประเสริฐสุข',
-    nameEn: resident.name || 'Somchai Prasert',
-    unit: resident.unit || '1204',
-    tower: resident.tower || 'A',
-    floor: resident.floor || 12,
-    phone: resident.phone || '081-234-5678',
-    pin: '123456',
+    nameTh: '',
+    nameEn: '',
+    unit: '',
+    tower: 'A',
+    floor: 12,
+    phone: '',
+    pin: '',
   });
 
   // Form State: PDPA Consents
@@ -53,10 +53,10 @@ export const ResidentOnboardingFlow: React.FC<ResidentOnboardingFlowProps> = ({
     essentialAccepted: true,
     locationSharing: true,
     pushNotifications: true,
-    healthTelemetry: resident.wearable?.connected ?? true,
+    healthTelemetry: true,
   });
 
-  // Form State: Profiling Personal Information
+  // Form State: Profiling Personal Information (Starts blank for user to fill in)
   const [profileData, setProfileData] = useState<{
     name: string;
     nameTh: string;
@@ -74,51 +74,32 @@ export const ResidentOnboardingFlow: React.FC<ResidentOnboardingFlowProps> = ({
     hasWearable: boolean;
     wearableModel: string;
   }>({
-    name: resident.name || 'Somchai Prasert',
-    nameTh: resident.nameTh || 'สมชาย ประเสริฐสุข',
-    nickname: isThai ? 'ลุงสมชาย' : 'Uncle Somchai',
-    birthDate: resident.birthDate || '1954-08-15',
-    gender: resident.gender || 'male',
-    bloodType: resident.medicalInfo?.bloodType || 'O Positive (O+)',
-    assistanceCategory: resident.assistanceCategory || 'wheelchair',
-    conditions: resident.medicalInfo?.conditions || (isThai ? 'ความดันโลหิตสูง, โรคหัวใจขาดเลือด' : 'Hypertension, Mild Ischemia'),
-    allergies: resident.medicalInfo?.allergies || (isThai ? 'แพ้ยาเพนิซิลลิน (Penicillin)' : 'Penicillin allergy'),
-    medications: resident.medicalInfo?.medications || (isThai ? 'ยาลดความดัน, แอสไพริน' : 'Amlodipine 5mg, Aspirin 81mg'),
-    emergencyContactName: resident.emergencyContacts?.[0]?.name || (isThai ? 'สมหญิง ประเสริฐสุข' : 'Somying Prasert'),
-    emergencyContactRelation: resident.emergencyContacts?.[0]?.relationship || (isThai ? 'บุตรสาว' : 'Daughter'),
-    emergencyContactPhone: resident.emergencyContacts?.[0]?.phone || '089-876-5432',
-    hasWearable: resident.wearable?.connected ?? true,
-    wearableModel: resident.wearable?.model || 'Apple Watch Series 9',
+    name: '',
+    nameTh: '',
+    nickname: '',
+    birthDate: '',
+    gender: 'male',
+    bloodType: 'O Positive (O+)',
+    assistanceCategory: 'standard',
+    conditions: '',
+    allergies: '',
+    medications: '',
+    emergencyContactName: '',
+    emergencyContactRelation: '',
+    emergencyContactPhone: '',
+    hasWearable: false,
+    wearableModel: 'None',
   });
 
-  // Quick autofill demo handler
-  const handleAutofillExample = () => {
-    setSignupData({
-      nameTh: 'วันดี สุขสมบูรณ์',
-      nameEn: 'Wandee Suksomboon',
-      unit: '0812',
-      tower: 'A',
-      floor: 8,
-      phone: '082-987-6543',
-      pin: '888888',
-    });
-    setProfileData({
-      name: 'Wandee Suksomboon',
-      nameTh: 'วันดี สุขสมบูรณ์',
-      nickname: isThai ? 'ป้าวันดี' : 'Aunt Wandee',
-      birthDate: '1956-03-22',
-      gender: 'female',
-      bloodType: 'B Positive (B+)',
-      assistanceCategory: 'elderly',
-      conditions: isThai ? 'โรคเบาหวานชนิดที่ 2, ข้อเข่าเสื่อม' : 'Type 2 Diabetes, Knee Osteoarthritis',
-      allergies: isThai ? 'ไม่มีประวัติแพ้ยา' : 'No known drug allergies',
-      medications: isThai ? 'เมตฟอร์มิน (Metformin)' : 'Metformin 500mg',
-      emergencyContactName: isThai ? 'ณัฐพล สุขสมบูรณ์' : 'Nattapon Suksomboon',
-      emergencyContactRelation: isThai ? 'บุตรชาย' : 'Son',
-      emergencyContactPhone: '086-555-1234',
-      hasWearable: true,
-      wearableModel: 'Samsung Galaxy Watch 6',
-    });
+  // Sync signup data into profile and proceed to PDPA
+  const handleProceedToPdpa = () => {
+    setProfileData((prev) => ({
+      ...prev,
+      name: signupData.nameEn || prev.name,
+      nameTh: signupData.nameTh || prev.nameTh,
+      nickname: prev.nickname || (signupData.nameTh ? signupData.nameTh.split(' ')[0] : ''),
+    }));
+    setStep('pdpa');
   };
 
   // Complete and save profile
@@ -248,23 +229,7 @@ export const ResidentOnboardingFlow: React.FC<ResidentOnboardingFlowProps> = ({
             </p>
           </div>
 
-          {/* Quick Pre-fill helper banner for easy grading & demo */}
-          <div className="flex items-center justify-between p-3 rounded-2xl bg-amber-50 border border-amber-200 text-xs">
-            <div className="flex items-center gap-2 text-amber-900">
-              <Sparkles className="w-4 h-4 text-amber-600 shrink-0" />
-              <span className="font-semibold text-[11px]">
-                {isThai ? 'ต้องการทดสอบอย่างรวดเร็ว?' : 'Testing the prototype?'}
-              </span>
-            </div>
-            <button
-              onClick={handleAutofillExample}
-              className="text-[11px] font-bold bg-white text-amber-800 hover:bg-amber-100 px-2.5 py-1 rounded-xl border border-amber-300 shadow-2xs transition"
-            >
-              {isThai ? 'กรอกข้อมูลตัวอย่าง' : 'Autofill Demo'}
-            </button>
-          </div>
-
-          {/* Sign Up Form Inputs */}
+          {/* Sign Up Form Inputs (User fills in by themselves) */}
           <div className="bg-white rounded-[28px] p-5 border border-slate-200/90 shadow-sm space-y-3.5">
             {/* Unit & Tower */}
             <div className="grid grid-cols-2 gap-3">
@@ -277,7 +242,7 @@ export const ResidentOnboardingFlow: React.FC<ResidentOnboardingFlowProps> = ({
                   value={signupData.tower}
                   onChange={(e) => setSignupData({ ...signupData, tower: e.target.value })}
                   className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-900 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-teal-500 focus:outline-hidden"
-                  placeholder="Tower A"
+                  placeholder="เช่น Tower A"
                 />
               </div>
               <div>
@@ -289,7 +254,7 @@ export const ResidentOnboardingFlow: React.FC<ResidentOnboardingFlowProps> = ({
                   value={signupData.unit}
                   onChange={(e) => setSignupData({ ...signupData, unit: e.target.value })}
                   className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-900 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-teal-500 focus:outline-hidden"
-                  placeholder="1204"
+                  placeholder="เช่น 1204"
                 />
               </div>
             </div>
@@ -304,7 +269,7 @@ export const ResidentOnboardingFlow: React.FC<ResidentOnboardingFlowProps> = ({
                 value={signupData.nameTh}
                 onChange={(e) => setSignupData({ ...signupData, nameTh: e.target.value })}
                 className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs text-slate-900 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-teal-500 focus:outline-hidden"
-                placeholder="สมชาย ประเสริฐสุข"
+                placeholder={isThai ? 'กรอกชื่อ-นามสกุลภาษาไทย' : 'e.g. สมชาย ประเสริฐสุข'}
               />
             </div>
 
@@ -318,7 +283,7 @@ export const ResidentOnboardingFlow: React.FC<ResidentOnboardingFlowProps> = ({
                 value={signupData.nameEn}
                 onChange={(e) => setSignupData({ ...signupData, nameEn: e.target.value })}
                 className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs text-slate-900 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-teal-500 focus:outline-hidden"
-                placeholder="Somchai Prasert"
+                placeholder="e.g. Somchai Prasert"
               />
             </div>
 
@@ -332,7 +297,7 @@ export const ResidentOnboardingFlow: React.FC<ResidentOnboardingFlowProps> = ({
                 value={signupData.phone}
                 onChange={(e) => setSignupData({ ...signupData, phone: e.target.value })}
                 className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-mono text-slate-900 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-teal-500 focus:outline-hidden"
-                placeholder="081-234-5678"
+                placeholder="08X-XXX-XXXX"
               />
             </div>
 
@@ -354,7 +319,7 @@ export const ResidentOnboardingFlow: React.FC<ResidentOnboardingFlowProps> = ({
             {/* Proceed to Step 2 (PDPA Consent) */}
             <div className="pt-2">
               <button
-                onClick={() => setStep('pdpa')}
+                onClick={handleProceedToPdpa}
                 className="w-full py-3.5 px-4 rounded-2xl bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs shadow-md shadow-teal-600/20 transition flex items-center justify-center gap-2 cursor-pointer"
               >
                 <span>{isThai ? 'ลงทะเบียนและไปสู่ขั้นตอน PDPA' : 'Sign Up & Proceed to PDPA'}</span>

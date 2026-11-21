@@ -18,7 +18,6 @@ import {
   Settings,
   ChevronLeft,
   Type,
-  UserPlus,
 } from 'lucide-react';
 
 export const ResidentApp: React.FC<{ isEmbedded?: boolean }> = ({ isEmbedded = false }) => {
@@ -86,27 +85,10 @@ export const ResidentApp: React.FC<{ isEmbedded?: boolean }> = ({ isEmbedded = f
           </div>
 
           <div className="flex items-center gap-1.5">
-            {/* Sign Up / New Resident Onboarding Button */}
-            <button
-              onClick={() => {
-                setOnboardingInitialStep('signup');
-                setIsOnboardingFlowOpen(!isOnboardingFlowOpen);
-              }}
-              className={`px-2 py-1 rounded-xl text-[10.5px] font-bold border transition flex items-center gap-1 cursor-pointer ${
-                isOnboardingFlowOpen
-                  ? 'bg-teal-700 text-white border-teal-700 shadow-xs'
-                  : 'bg-teal-50 text-teal-800 border-teal-200 hover:bg-teal-100'
-              }`}
-              title="Sign Up / New Resident Registration"
-            >
-              <UserPlus className="w-3.5 h-3.5 text-teal-600" />
-              <span>{isThai ? 'สมัครใหม่' : 'Sign Up'}</span>
-            </button>
-
             {/* Elderly Friendly Large Text Toggle */}
             <button
               onClick={() => setLargeFontMode(!largeFontMode)}
-              className={`px-2 py-1 rounded-xl text-[10.5px] font-bold border transition flex items-center gap-1 ${
+              className={`px-2 py-1 rounded-xl text-[10.5px] font-bold border transition flex items-center gap-1 cursor-pointer ${
                 largeFontMode
                   ? 'bg-teal-600 text-white border-teal-600 shadow-xs'
                   : 'bg-slate-100 text-slate-600 border-slate-200 hover:bg-slate-200'
