@@ -33,7 +33,7 @@ export const SosView: React.FC = () => {
   } = useApp();
 
   const isThai = language === 'th';
-  const [selectedCategory, setSelectedCategory] = useState<EmergencyCategory>('medical');
+  const [selectedCategory, setSelectedCategory] = useState<EmergencyCategory | null>(null);
   const [showCancelPrompt, setShowCancelPrompt] = useState(false);
   const [cancelReason, setCancelReason] = useState('');
 
@@ -96,12 +96,13 @@ export const SosView: React.FC = () => {
 
   // Dragging logic for Slide to Confirm
   const handlePointerDown = (e: React.PointerEvent) => {
+    if (!selectedCategory) return;
     setIsDragging(true);
     (e.target as HTMLElement).setPointerCapture(e.pointerId);
   };
 
   const handlePointerMove = (e: React.PointerEvent) => {
-    if (!isDragging || !sliderTrackRef.current) return;
+    if (!isDragging || !sliderTrackRef.current || !selectedCategory) return;
     const rect = sliderTrackRef.current.getBoundingClientRect();
     const knobWidth = 56;
     const maxTrack = rect.width - knobWidth;
@@ -180,8 +181,16 @@ export const SosView: React.FC = () => {
               </span>
               <span>{t.step1SelectReason}</span>
             </span>
-            <span className="text-[11px] font-bold text-teal-700 bg-teal-50 px-2.5 py-0.5 rounded-full border border-teal-200">
-              {isThai ? 'จำเป็นต้องเลือก' : 'Required'}
+            <span
+              className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full border transition-colors ${
+                selectedCategory
+                  ? 'text-emerald-700 bg-emerald-50 border-emerald-200'
+                  : 'text-amber-700 bg-amber-50 border-amber-200'
+              }`}
+            >
+              {selectedCategory
+                ? (isThai ? 'เลือกแล้ว ✓' : 'Selected ✓')
+                : (isThai ? 'จำเป็นต้องเลือก' : 'Required')}
             </span>
           </div>
 
@@ -255,19 +264,34 @@ export const SosView: React.FC = () => {
           {/* Slide Track Container */}
           <div
             ref={sliderTrackRef}
-            className="relative w-full h-16 rounded-full bg-slate-100 border-2 border-rose-200 overflow-hidden select-none touch-none p-1 flex items-center shadow-inner"
+            className={`relative w-full h-16 rounded-full border-2 overflow-hidden select-none touch-none p-1 flex items-center transition-all ${
+              selectedCategory
+                ? 'bg-slate-100 border-rose-300 shadow-inner'
+                : 'bg-slate-100/70 border-slate-200 cursor-not-allowed opacity-80'
+            }`}
           >
             {/* Colored Fill Track behind the Knob */}
-            <div
-              className="absolute left-0 top-0 bottom-0 bg-gradient-to-r from-rose-500 to-red-600 transition-all rounded-full"
-              style={{ width: `${Math.max(sliderPosition, 10)}%` }}
-            ></div>
+            {selectedCategory && (
+              <div
+                className="absolute left-0 top-0 bottom-0 bg-gradient-to-r from-rose-500 to-red-600 transition-all rounded-full"
+                style={{ width: `${Math.max(sliderPosition, 10)}%` }}
+              ></div>
+            )}
 
-            {/* Glowing Text in Track */}
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none text-xs font-black text-rose-800 tracking-wider">
-              <span className={sliderPosition > 40 ? 'text-white' : 'text-rose-900'}>
-                {t.slidePrompt} ➔➔
-              </span>
+            {/* Glowing / Informational Text in Track */}
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none text-xs font-black tracking-wider px-14 text-center">
+              {selectedCategory ? (
+                <span className={sliderPosition > 40 ? 'text-white' : 'text-rose-900'}>
+                  {t.slidePrompt} ➔➔
+                </span>
+              ) : (
+                <span className="text-slate-400 font-bold flex items-center gap-1.5 text-[11px] sm:text-xs">
+                  <AlertTriangle className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                  {isThai
+                    ? 'โปรดเลือกประเภทเหตุฉุกเฉินด้านบนก่อน'
+                    : 'Please select emergency reason above first'}
+                </span>
+              )}
             </div>
 
             {/* Draggable Knob */}
@@ -276,23 +300,37 @@ export const SosView: React.FC = () => {
               onPointerMove={handlePointerMove}
               onPointerUp={handlePointerUp}
               onPointerCancel={handlePointerUp}
-              className="absolute z-10 w-14 h-14 rounded-full bg-white text-rose-600 shadow-md border border-rose-300 flex items-center justify-center cursor-grab active:cursor-grabbing hover:scale-105 transition-transform"
+              className={`absolute z-10 w-14 h-14 rounded-full flex items-center justify-center transition-all ${
+                selectedCategory
+                  ? 'bg-white text-rose-600 shadow-md border border-rose-300 cursor-grab active:cursor-grabbing hover:scale-105'
+                  : 'bg-slate-200 text-slate-400 border border-slate-300 cursor-not-allowed'
+              }`}
               style={{
                 left: `calc(${sliderPosition}% * (1 - 56px / 100%))`,
               }}
             >
-              <Phone className="w-6 h-6 fill-current text-rose-600 animate-pulse" />
+              <Phone
+                className={`w-6 h-6 fill-current ${
+                  selectedCategory ? 'text-rose-600 animate-pulse' : 'text-slate-400'
+                }`}
+              />
             </div>
           </div>
 
           {/* Quick Click Fallback for Seniors who prefer tapping */}
           <div className="pt-1 text-center">
             <button
+              disabled={!selectedCategory}
               onClick={() => {
+                if (!selectedCategory) return;
                 setSliderPosition(100);
                 triggerResidentSos(selectedCategory);
               }}
-              className="text-[11px] font-bold text-slate-500 hover:text-rose-600 underline transition"
+              className={`text-[11px] font-bold transition ${
+                selectedCategory
+                  ? 'text-slate-500 hover:text-rose-600 underline cursor-pointer'
+                  : 'text-slate-400 cursor-not-allowed'
+              }`}
             >
               {isThai ? 'หรือแตะที่นี่เพื่อยืนยันโทรแจ้งทันที' : 'Or tap here to confirm SOS directly'}
             </button>
